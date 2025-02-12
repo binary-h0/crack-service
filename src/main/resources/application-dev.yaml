@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: crack
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update # create 운영에서 사용 X
+    defer-datasource-initialization: true
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    groups-order: DESC
+    # tags-sorter: alpha
+    # disable-swagger-default-url: true
+    # display-request-duration: true
+    # defaultModelsExpandDepth: 2
+    # defaultModelExpandDepth: 2
+  api-docs:
+    path: /api-docs
+  # show-actuator: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  writer-with-default-pretty-printer: true
+  model-and-view-allowed: true
+#   paths-to-match:
+#     - /api/v1/**
+# management:
+#   server:
+#     port: 15020
+#   endpoints:
+#     web:
+#       exposure:
+#         include:
+#           - health
+#   endpoint:
+#     health:
+#       show-details: always
+#       probes:
+#         enabled: true
