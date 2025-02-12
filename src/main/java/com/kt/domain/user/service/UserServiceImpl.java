@@ -3,12 +3,14 @@ package com.kt.domain.user.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.kt.domain.user.dto.LoginDto;
 import com.kt.domain.user.dto.UserDto;
 import com.kt.domain.user.entity.User;
-import com.kt.global.repository.UserRepository;
+import com.kt.domain.user.repository.UserRepository;
+import com.kt.global.exception.CustomException;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDto createUser(UserDto userDto) {
         if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "User already exists");
         }
 
         // 비밀번호 암호화 + salt 이용
