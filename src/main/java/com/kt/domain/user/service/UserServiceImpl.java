@@ -1,13 +1,16 @@
 package com.kt.domain.user.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.kt.domain.user.dto.LoginDto;
+import com.kt.domain.user.dto.UserDto;
 import com.kt.domain.user.entity.User;
 import com.kt.global.repository.UserRepository;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,19 +21,113 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    @Override
+    public UserDto createUser(UserDto userDto) {
+        if (userRepository.findByEmail(userDto.getEmail()).isPresent()) {
+            throw new RuntimeException("User already exists");
+        }
+
+        // 비밀번호 암호화 + salt 이용
+
+        User user = User.builder()
+                .username(userDto.getUsername())
+                .email(userDto.getEmail())
+                .password(userDto.getPassword())
+                .phone(userDto.getPhone())
+                .address(userDto.getAddress())
+                .role("USER")
+                .build();
+
+        userRepository.save(user);
+        return userDto;
     }
 
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    @Override
+    public List<UserDto> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> UserDto.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .build())
+                .collect(Collectors.toList());
+
     }
 
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    @Override
+    public UserDto updateUser(Long id, UserDto userDto, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        user.setUsername(userDto.getUsername());
+        user.setEmail(userDto.getEmail());
+        userRepository.save(user);
+        return userDto;
     }
 
-    public void deleteUser(Long id) {
+    @Override
+    public UserDto getUserById(Long id, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .build();
+    }
+
+    @Override
+    public String deleteUser(Long id, HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
         userRepository.deleteById(id);
+        return "User deleted successfully";
     }
+
+    @Override
+    public String login(LoginDto loginDto, HttpSession session) {
+        User user = userRepository.findByEmail(loginDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (!user.getPassword().equals(loginDto.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        session.setAttribute("user", user);
+        return "Login successful";
+    }
+
+    @Override
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "Logout successful";
+    }
+
+    @Override
+    public String loginRefresh(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return "Login refresh successful";
+    }
+
+    @Override
+    public String findId(UserDto userDto) {
+        User user = userRepository.findByEmail(userDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getUsername();
+    }
+
+    @Override
+    public String findPassword(UserDto userDto) {
+        User user = userRepository.findByEmail(userDto.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return user.getPassword();
+    }
+
 }

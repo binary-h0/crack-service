@@ -1,17 +1,31 @@
 package com.kt.domain.user.service;
 
 import java.util.List;
-import java.util.Optional;
 
-import com.kt.domain.user.entity.User;
+import com.kt.domain.user.dto.LoginDto;
+import com.kt.domain.user.dto.UserDto;
+
+import jakarta.servlet.http.HttpSession;
 
 public interface UserService {
 
-    public User saveUser(User user);
+    public UserDto createUser(UserDto userDto);
 
-    public List<User> getAllUsers();
+    public List<UserDto> getAllUsers();
 
-    public Optional<User> getUserById(Long id);
+    public UserDto updateUser(Long id, UserDto userDto, HttpSession session);
 
-    public void deleteUser(Long id);
+    public UserDto getUserById(Long id, HttpSession session);
+
+    public String deleteUser(Long id, HttpSession session);
+
+    public String login(LoginDto loginDto, HttpSession session);
+
+    public String logout(HttpSession session);
+
+    public String loginRefresh(HttpSession session);
+
+    public String findId(UserDto userDto);
+
+    public String findPassword(UserDto userDto);
 }

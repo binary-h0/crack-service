@@ -10,7 +10,6 @@ import lombok.Data;
 @Schema(title = "사용자 정보", description = "사용자 정보 description")
 public class UserDto {
 
-    @NotNull
     private Long id;
 
     @NotNull
@@ -18,4 +17,13 @@ public class UserDto {
 
     @NotNull
     private String email;
+
+    @NotNull
+    private String password;
+
+    @NotNull
+    private String phone;
+
+    @NotNull
+    private String address;
 }
